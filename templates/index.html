@@ -6,6 +6,19 @@
             list-style: none;
             padding: 0;
             margin: 0;
+            width: 200px;
+        }
+        li {
+            clear: both;
+        }
+        li button {
+            -webkit-appearance: none;
+            border: none;
+            outline: none;
+            color: red;
+            float: right;
+            cursor: pointer;
+            font-size: 20px;
         }
     </style>
   </head>
@@ -14,7 +27,10 @@
     <ul id="todos">
       {% for d in data %}
       <li>
-        <input class="check-completed" data-id="{{ d.id }}" type="checkbox" {% if d.complete %} checked {% endif %}/> {{ d.description }}
+        <input class="check-completed" data-id="{{ d.id }}" type="checkbox" 
+        {% if d.complete %} checked {% endif %}/> 
+        {{ d.description }}
+        <button class="delete-item" data-id="{{ d.id }}">&cross;</button>
       </li>
       {% endfor %}
     </ul>
@@ -30,6 +46,26 @@
         </form>
     </div>
     <script>
+        const deleteItens = document.querySelectorAll('.delete-item');
+        for (let i = 0; i < deleteItens.length; i++){
+            const deleteItem = deleteItens[i];
+            deleteItem.onclick = function(e) {
+                console.log('event', e);
+                const todoID = e.target.dataset['id'];
+                fetch('/todos/' + todoID + '/delete-todo', {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting');
+                    }
+                })
+            }
+        }
+
         const checkboxes = document.querySelectorAll('.check-completed');
         for (let i = 0; i < checkboxes.length; i++) {
             const checkbox = checkboxes[i];
