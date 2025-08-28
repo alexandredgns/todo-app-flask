@@ -21,36 +21,6 @@ class Todo(db.Model):
 
 
 
-#------------------------------------------------------------------
-#------------------------------------------------------------------
-@app.route('/todos/create', methods=['POST'])
-def create_todo():   
-   body={}
-   error = False
-   try: 
-       description =  request.get_json()['description']
-       todo = Todo(description=description)
-       body['description'] = todo.description
-       db.session.add(todo)
-       db.session.commit()
-   except:        
-        error = True
-        db.session.rollback()
-        print(sys.exc_info())
-   finally:
-        db.session.close()           
-        if  error == True:
-            abort(400)
-        else:            
-            return jsonify(body)
-
-@app.route('/')
-def index():
-    return render_template('index.html', data=Todo.query.all())
-
-
-
-
 #always include this at the bottom of your code
-if __name__ == '__main__':
-   app.run(host="0.0.0.0", port=5500)
+#if __name__ == '__main__':
+#   app.run(host="0.0.0.0", port=5500)
