@@ -19,8 +19,43 @@ class Todo(db.Model):
     def __repr__(self):
         return f"<Todo {self.id}, {self.name}>"
 
+with app.app_context():
+    db.create_all()
 
+@app.route('/')
+def index():
+    return render_template('index.html', data=Todo.query.all())
 
-#always include this at the bottom of your code
-#if __name__ == '__main__':
-#   app.run(host="0.0.0.0", port=5500)
+@app.route('/todos/create', methods=['POST'])
+def create_todo():
+    error = False
+    body = {}
+    try:
+        new_description = request.get_json()['description']
+        new_todo = Todo(description=new_description)
+        db.session.add(new_todo)
+        db.session.commit()
+        body['description'] = new_todo.description
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+    if error:
+        abort(400)
+    else:
+        return jsonify(body)
+
+@app.route('/todos/<todo_id>/set-completed', methods=['POST'])
+def set_completed_todo(todo_id):
+    try:
+        completed = request.get_json()['completed']
+        todo = Todo.query.get(todo_id)
+        todo.completed = completed          #came from the ajax request
+        db.session.commit()
+    except:
+        db.session.rollback()
+    finally:
+        db.session.close()
+    return redirect(url_for('index'))
