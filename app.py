@@ -30,13 +30,14 @@ class TodoList(db.Model):
 with app.app_context():
     db.create_all()
 
-@app.route('/todos/create', methods=['POST'])
-def create_todo():
+@app.route('/lists/<list_id>/todos/create', methods=['POST'])
+def create_todo(list_id):
     error = False
     body = {}
     try:
         new_description = request.get_json()['description']
         new_todo = Todo(description=new_description)
+        new_todo.list_id = list_id
         db.session.add(new_todo)
         db.session.commit()
         body['description'] = new_todo.description
@@ -85,6 +86,27 @@ def get_list_todos(list_id):
                 lists=TodoList.query.all(),
                 active_list=TodoList.query.get(list_id),
                 todos=Todo.query.filter_by(list_id=list_id).order_by('id').all())
+
+@app.route('/lists/create', methods=['POST'])
+def create_list():
+    error = False
+    body = {}
+    try:
+        new_name = request.get_json()['name']
+        new_list = TodoList(name=new_name)
+        db.session.add(new_list)
+        db.session.commit()
+        body['name'] = new_list.name
+    except:
+        error = True
+        db.session.rollback()
+        print(sys.exc_info())
+    finally:
+        db.session.close()
+    if error:
+        abort(400)
+    else:
+        return jsonify(body)
 
 @app.route('/')
 def index():

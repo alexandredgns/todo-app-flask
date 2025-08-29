@@ -6,7 +6,7 @@
             list-style: none;
             padding: 0;
             margin: 0;
-            width: 200px;
+            width: 300px;
         }
         li {
             clear: both;
@@ -24,11 +24,22 @@
             display: inline-block;
             vertical-align: top;
         }
+        .todos-wrapper{
+            background-color: rgb(218, 218, 218);
+        }
     </style>
   </head>
 
   <body>
     <div class="lists-wrapper">
+        <h2>TODO LISTS</h2>
+
+        <form id="list-form">
+            <label>New List</label>
+            <input type="text" id="list-name" name="list-name">
+            <input type="submit" id="submit" value="create">
+        </form>
+
         <ul id="lists">
             {% for list in lists %}
             <li>
@@ -39,12 +50,15 @@
     </div>
 
     <div class="todos-wrapper">
-        <h4>{{ active_list.name }}</h4>
-
+        <h2> TODO ITENS</h2>
         <form id="todo-form">
+            <label>New Task</label>
             <input type="text" id="description" name="description">
             <input type="submit" id="submit" value="create">
         </form>
+
+        <h4>-> {{ active_list.name }}</h4>
+        <input type="hidden" id="active_list_id" value="{{ active_list.id }}">
 
         <ul id="todos">
         {% for todo in todos %}
@@ -60,6 +74,7 @@
     </div>
     
     <script>
+        // CRUD routes ToDo's
         const deleteItens = document.querySelectorAll('.delete-item');
         for (let i = 0; i < deleteItens.length; i++){
             const deleteItem = deleteItens[i];
@@ -101,7 +116,8 @@
 
         document.getElementById('todo-form').onsubmit = function(event) {
             event.preventDefault();
-            fetch('/todos/create', {
+            const listId = document.getElementById('active_list_id').value;
+            fetch('/lists/' + listId + '/todos/create', {
                 method: 'POST',
                 body: JSON.stringify({
                     'description': document.getElementById('description').value
@@ -120,6 +136,31 @@
                 document.getElementById('todos').appendChild(liItem);
             })
         }
+
+        //CRUD routes LISTS
+        document.getElementById('list-form').onsubmit = function(event) {
+            event.preventDefault();
+            fetch('/lists/create', {
+                method: 'POST',
+                body: JSON.stringify({
+                    'name': document.getElementById('list-name').value
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(jsonResponse) {
+                console.log(jsonResponse);
+                const liItem = document.createElement('LI');
+                liItem.innerHTML = jsonResponse['name'];
+                document.getElementById('lists').appendChild(liItem);
+            })
+        }
+
+
     </script>
   </body>
 </html>
