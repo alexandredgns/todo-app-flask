@@ -20,31 +20,45 @@
             cursor: pointer;
             font-size: 20px;
         }
+        .lists-wrapper, .todos-wrapper {
+            display: inline-block;
+            vertical-align: top;
+        }
     </style>
   </head>
 
   <body>
-    <ul id="todos">
-      {% for d in data %}
-      <li>
-        <input class="check-completed" data-id="{{ d.id }}" type="checkbox" 
-        {% if d.complete %} checked {% endif %}/> 
-        {{ d.description }}
-        <button class="delete-item" data-id="{{ d.id }}">&cross;</button>
-      </li>
-      {% endfor %}
-    </ul>
-    <div>
-        <form id="form">
-            <div>
-                <label for="name">Create a To-Do item</label>
-                <input type="text" id="description" name="description">
-            </div>
-            <div>
-                <input type="submit" id="submit" value="Create">
-            </div>
-        </form>
+    <div class="lists-wrapper">
+        <ul id="lists">
+            {% for list in lists %}
+            <li>
+                <a href="/lists/{{ list.id }}">{{ list.name }}</a>
+            </li>
+            {% endfor %}
+        </ul>
     </div>
+
+    <div class="todos-wrapper">
+        <h4>{{ active_list.name }}</h4>
+
+        <form id="todo-form">
+            <input type="text" id="description" name="description">
+            <input type="submit" id="submit" value="create">
+        </form>
+
+        <ul id="todos">
+        {% for todo in todos %}
+        <li>
+            <input class="check-completed" data-id="{{ todo.id }}" type="checkbox" 
+            {% if todo.complete %} checked {% endif %}/> 
+            {{ todo.description }}
+            <button class="delete-item" data-id="{{ todo.id }}">&cross;</button>
+        </li>
+        {% endfor %}
+        </ul>
+
+    </div>
+    
     <script>
         const deleteItens = document.querySelectorAll('.delete-item');
         for (let i = 0; i < deleteItens.length; i++){
@@ -85,7 +99,7 @@
             }
         }
 
-        document.getElementById('form').onsubmit = function(event) {
+        document.getElementById('todo-form').onsubmit = function(event) {
             event.preventDefault();
             fetch('/todos/create', {
                 method: 'POST',
